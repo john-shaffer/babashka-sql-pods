@@ -6,6 +6,6 @@
        (let [res# (do ~@body)]
          (pod.babashka.sql.transaction/commit ~sym)
          res#)
-       (catch Exception e#
+       (catch Throwable e#
          (pod.babashka.sql.transaction/rollback ~sym)
          (throw e#)))))

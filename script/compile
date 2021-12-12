@@ -2,14 +2,6 @@
 
 set -eo pipefail
 
-if [ -z "$GRAALVM_HOME" ]; then
-    echo "Please set GRAALVM_HOME"
-    exit 1
-fi
-
-"$GRAALVM_HOME/bin/gu" install native-image || true
-export PATH=$GRAALVM_HOME/bin:$PATH
-
 POD_LEIN_PROFILES="+uberjar"
 POD_NAME="pod-babashka-$POD_DB_TYPE"
 POD_REFLECTION_CONFIG="reflection-$POD_DB_TYPE.json"
@@ -82,10 +74,10 @@ args=( "-jar" "$JAR"
        "-H:+AddAllCharsets"
        "-H:IncludeResources=org/hsqldb/.*\.properties"
        "-H:IncludeResources=org/hsqldb/.*\.sql"
-       "--initialize-at-run-time=com.mysql.cj.jdbc.AbandonedConnectionCleanupThread"
-       "--initialize-at-run-time=com.mysql.cj.jdbc.AbandonedConnectionCleanupThread.AbandonedConnectionCleanupThread"
-       "--initialize-at-run-time=com.mysql.cj.jdbc.Driver"
-       "--initialize-at-run-time=com.mysql.cj.jdbc.NonRegisteringDriver"
+       "-H:IncludeResources=mariadb.properties"
+       "--initialize-at-run-time=org.mariadb.jdbc.Driver"
+       "--initialize-at-run-time=org.mariadb.jdbc.client.socket.impl.UnixDomainSocket"
+       "--initialize-at-run-time=org.mariadb.jdbc.client.socket.impl.UnixDomainSocket$SockAddr"
        "--initialize-at-run-time=org.postgresql.sspi.SSPIClient"
        "--initialize-at-run-time=com.microsoft.sqlserver.jdbc.SQLServerColumnEncryptionAzureKeyVaultProvider"
        "--initialize-at-run-time=com.microsoft.sqlserver.jdbc.SQLServerFMTQuery"
@@ -107,4 +99,4 @@ if [ "$BABASHKA_STATIC" = "true" ]; then
     fi
 fi
 
-"$GRAALVM_HOME/bin/native-image" "${args[@]}"
+native-image "${args[@]}"
